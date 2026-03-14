@@ -227,7 +227,7 @@
 </div>
 
 <script>
-const REPO   = 'cinar55/package-manager';
+const REPO   = 'cinar55/softhub';
 const BRANCH = 'main';
 const RAW    = 'https://raw.githubusercontent.com/' + REPO + '/' + BRANCH + '/';
 const API    = 'https://api.github.com/repos/' + REPO + '/contents?ref=' + BRANCH;
@@ -250,12 +250,12 @@ function parseYaml(txt) {
 function isUrl(s) { return typeof s === 'string' && /^https?:\/\//.test(s); }
 
 function makeRow(app) {
-  const link = app.LINK || app['LİNK'] || '';
-  const name = app.AD || app['AD'] || 'Unknown';
-  const icon = app.ICON || app['İCON'] || app['ICON'] || '';
+  const link = app.LINK || app['L\u0130NK'] || '';
+  const name = app.AD || 'Unknown';
+  const icon = app.ICON || app['\u0130CON'] || '';
 
   const iconHtml = isUrl(icon)
-    ? `<img src="${icon}" alt="" onerror="this.parentElement.textContent='📦'">`
+    ? '<img src="' + icon + '" alt="" onerror="this.parentElement.textContent=\'📦\'">'
     : (icon || '📦');
 
   const row = document.createElement('a');
@@ -269,9 +269,9 @@ function makeRow(app) {
   }
 
   row.innerHTML =
-    `<div class="row-icon">${iconHtml}</div>` +
-    `<div class="row-name">${name}</div>` +
-    (link ? `<span class="row-dl">Download</span>` : '');
+    '<div class="row-icon">' + iconHtml + '</div>' +
+    '<div class="row-name">' + name + '</div>' +
+    (link ? '<span class="row-dl">Download</span>' : '');
 
   return row;
 }
@@ -279,7 +279,7 @@ function makeRow(app) {
 function filter() {
   const q = document.getElementById('search').value.toLowerCase();
   let vis = 0;
-  document.querySelectorAll('.row').forEach(r => {
+  document.querySelectorAll('.row').forEach(function(r) {
     const show = r.dataset.name.includes(q);
     r.style.display = show ? '' : 'none';
     if (show) vis++;
@@ -302,20 +302,21 @@ async function load() {
     return;
   }
 
-  const yamls = files.filter(f => f.name.endsWith('.yaml') || f.name.endsWith('.yml'));
+  const yamls = files.filter(function(f) {
+    return f.name.endsWith('.yaml') || f.name.endsWith('.yml');
+  });
   document.getElementById('pkg-count').textContent = yamls.length + ' packages';
   document.getElementById('skels').remove();
 
   const list  = document.getElementById('list');
   const empty = document.getElementById('empty');
 
-  await Promise.allSettled(yamls.map(async f => {
+  await Promise.allSettled(yamls.map(async function(f) {
     try {
       const r = await fetch(RAW + encodeURIComponent(f.name));
       if (!r.ok) return;
       const app = parseYaml(await r.text());
-      const name = app.AD || app['AD'];
-      if (!name) return;
+      if (!app.AD) return;
       apps.push(app);
       list.insertBefore(makeRow(app), empty);
     } catch (_) {}
